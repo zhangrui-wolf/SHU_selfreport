@@ -1,38 +1,43 @@
+# -- coding: utf-8 --
 import argparse
 
-from utils.utils import test_report, test_send_email, auto_report
-
+from selfreport.SelfReport import SelfReport
 
 if __name__ == "__main__":
     setting_config_path = "configs/setting_config.yaml"
-    report_config_path = "configs/report_config.yaml"
-    log_path = "log/"
+    person_config_path = "configs/person_config.yaml"
+    save_log_dir = "log/"
+
+    self_report = SelfReport(setting_config_path, person_config_path, save_log_dir, "selfreport")
 
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        '--test_report',
-        '-r',
+        '--test_all_accounts',
+        '-t',
         action='store_true',
-        help='测试账号是否正确')
+        help='测试所有账号')
+    parser.add_argument(
+        '--test_single_account',
+        '-s',
+        type=str,
+        help='测试单个账号')
     parser.add_argument(
         '--test_send_email',
         '-e',
-        action='store_true',
-        help='测试邮件发送模块')
-    parser.add_argument(
-        "--account",
-        '-a',
         type=str,
-        help="选择了测试邮件功能，使用该选项输入测试邮件收件邮箱")
+        help='测试邮件发送模块，后接测试测试邮件收件邮箱')
     args = parser.parse_args()
 
-    if args.test_report:
-        test_report(report_config_path)
+    if args.test_all_accounts:
+        self_report.test_all_accounts()
+
+    if args.test_single_account:
+        self_report.test_single_account(args.test_single_account)
 
     if args.test_send_email:
-        test_send_email(args.account, report_config_path)
+        self_report.test_send_email(args.test_send_email)
 
-    if args.test_report or args.test_send_email:
+    if args.test_all_accounts or args.test_single_account or args.test_send_email:
         exit(0)
 
-    auto_report(report_config_path, setting_config_path, log_path)
+    self_report.auto_report()

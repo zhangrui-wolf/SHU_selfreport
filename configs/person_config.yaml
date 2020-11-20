@@ -1,0 +1,6 @@
+- id: "xxxxxxxx"                                             // 学号
+  pwd: "xxxxxxxx"                                         // 密码
+  email_to: "xxxxxxxx@xxxx.xxx"                  // 邮箱
+- id: "xxxxxxxx"
+  pwd: "xxxxxxxx"
+  email_to: "xxxxxxxx@xxxx.xxx"

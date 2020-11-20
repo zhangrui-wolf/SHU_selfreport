@@ -1,32 +1,25 @@
-# 每日一报设置
-report_setting:
-  # “每日一报”填报成功是否发送邮件
-  # true：发送
-  # false：不发送
-  send_email: false
+report:
+  send_email: true                       // 是否发送每日一报是否成功的提醒邮件
 
-  # 早上申报时间,建议填写7点或8点，依据自己需要填写
-  morning_hour: 7
+  morning_hour: 7                      // 早上填报的时间
+  morning_minute: 15
 
-  # 晚上申报时间，建议填写20点
-  night_hour: 20
+  night_hour: 20                         // 晚上填报的时间
+  night_minute: 45
 
-  # 申报的时间区间
-  # 如morning_hour和night_hour填写为7和20，minute填为10，则会在7:10-7:11、20:10-20:11进行填报
-  minute: 10
+  temperature: 36.5                    // 温度
 
-  # 温度
-  # 如填写36.3，则会在36.3-0.2， 36.3+0.2之间选择随机数填报
-  temperature: 36.3
 
-# 管理员设置：是否让运行程序的人通过邮件收到每天生成的日志内容
-manager_setting:
-  # 是否发送邮件
-  send_email: false
-
-  # 收件邮箱
-  email_to: "xxx@xxx.com"
-
-  # 发送时间
-  hours: 22
+manager:
+  send_email: true                                      // 是否发送每天的日志给程序管理员
+  email_to: "xxx@xxx.xxx"                           // 接收日志的邮箱账号
+  hour: 22                                                   // 发送日志的时间
   minute: 30
+
+
+email:
+  from: "xxx@xxx.xxx"                             // 用于发送邮件的账号
+  username: "xxx@xxx.xxx"                     // 用于发送邮件的账号
+  password: "xxx"                                   // 邮件服务器的密钥
+  smtp: "smtp.xxx.xxx"
+  port: 465
