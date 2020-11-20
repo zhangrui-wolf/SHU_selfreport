@@ -138,3 +138,5 @@ dmypy.json
 cython_debug/
 
 .idea/
+configs/wolf_person_config.yaml
+configs/wolf_setting_config.yaml
