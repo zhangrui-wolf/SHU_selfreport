@@ -47,12 +47,19 @@
 2. 修改`person_config.yaml`
 
    ```yaml
-   - id: "xxxxxxxx"                                             // 学号
-     pwd: "xxxxxxxx"                                        // 密码
-     email_to: "xxxxxxxx@xxxx.xxx"         // 邮箱
+   - id: "xxxxxxxx"                                          // 学号
+     pwd: "xxxxxxxx"                                         // 密码
+     email_to: "xxxxxxxx@xxxx.xxx"                           // 邮箱
+     campus: "宝山"                                           // 校区，内容可为：“宝山”，“延长”，“嘉定”
+     county: "宝山区"                                         // 当天所在县区，建议与校区相同，即可为："宝山区"、"静安区"、"嘉定区"
+     address: "上海市宝山区大场镇上大路99号上海大学宝山校区"       // 具体地址，随便，建议填写校区地址
    - id: "xxxxxxxx"
      pwd: "xxxxxxxx"
      email_to: "xxxxxxxx@xxxx.xxx"
+     campus: "xxx"
+     county: "xxx"
+     address: "xxx"
+   
    ```
    
 3. 测试（可选）
