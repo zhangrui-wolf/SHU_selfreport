@@ -29,6 +29,7 @@
      temperature: 36.5                   // 温度
    
    
+   // 管理员功能设置
    manager:
      send_email: true                                           // 是否发送每天的日志给程序管理员
      email_to: "xxx@xxx.xxx"                           // 接收日志的邮箱账号
@@ -36,12 +37,13 @@
      minute: 30
    
    
+   // 发送邮件设置
    email:
      from: "xxx@xxx.xxx"                         // 用于发送邮件的账号
-     username: "xxx@xxx.xxx"
+     username: "xxx@xxx.xxx"              // 同上
      password: "xxx"                                  // 邮件服务器的密钥
-     smtp: "smtp.xxx.xxx"
-     port: 465
+     smtp: "smtp.xxx.xxx"                       // smtp服务器
+     port: 465                                                // smtp服务器端口
    ```
    
 2. 修改`person_config.yaml`
