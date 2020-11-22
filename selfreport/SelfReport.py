@@ -85,11 +85,11 @@ class SelfReport(object):
 
         person_config = self.__load_config(self.person_config_path)
 
-        for user in person_config:
-            is_successful = self.__report(t, user['id'], user['pwd'])
-            print("{} {} {}".format(user['id'], self.__get_report_name(t), self.__get_status(is_successful)))
+        for person_info in person_config:
+            is_successful = self.__report(t, person_info)
+            print("{} {} {}".format(person_info['id'], self.__get_report_name(t), self.__get_status(is_successful)))
 
-            time.sleep(int(random.uniform(30, 60)))
+            time.sleep(int(random.uniform(10, 20)))
 
         exit(0)
 
@@ -104,12 +104,12 @@ class SelfReport(object):
 
         person_config = self.__load_config(self.person_config_path)
 
-        for user in person_config:
-            if account != user['id']:
+        for person_info in person_config:
+            if account != person_info['id']:
                 continue
 
-            is_successful = self.__report(t, user['id'], user['pwd'])
-            print("{} {} {}".format(user['id'], self.__get_report_name(t), self.__get_status(is_successful)))
+            is_successful = self.__report(t, person_info)
+            print("{} {} {}".format(person_info, self.__get_report_name(t), self.__get_status(is_successful)))
 
             break
 
@@ -136,10 +136,10 @@ class SelfReport(object):
 
                 person_config = self.__load_config(self.person_config_path)
 
-                for user in person_config:
-                    is_successful = self.__report(t, user['id'], user['pwd'])
+                for person_info in person_config:
+                    is_successful = self.__report(t, person_info)
 
-                    self.__send_report_email(is_successful, user['email_to'], t)
+                    self.__send_report_email(is_successful, person_info['email_to'], t)
 
                     time.sleep(int(random.uniform(30, 60)))
 
@@ -210,7 +210,7 @@ class SelfReport(object):
         t = t + dt.timedelta(hours=8)
         return t
 
-    def __report(self, t, username, password):
+    def __report(self, t, person_info):
         """
         Basic module: complete "Report of the Day" through user
         account and password
@@ -228,8 +228,8 @@ class SelfReport(object):
             try:
                 r = sess.get('https://selfreport.shu.edu.cn/Default.aspx')
                 sess.post(r.url, data={
-                    'username': username,
-                    'password': password
+                    'username': person_info['id'],
+                    'password': person_info['pwd']
                 })
                 sess.get(
                     'https://newsso.shu.edu.cn/oauth/authorize?response_type=code&client_id=WUHWfrntnWYHZfzQ5QvXUCVy'
@@ -239,7 +239,7 @@ class SelfReport(object):
                 if retry_time > 0:
                     retry_time -= 1
                     continue
-                self.logger.error("登录1 失败 {}".format(username))
+                self.logger.error("登录1 失败 {}".format(person_info['id']))
                 return False
             break
 
@@ -261,32 +261,66 @@ class SelfReport(object):
         view_state = soup.find('input', attrs={'name': '__VIEWSTATE'})
 
         if view_state is None:
-            self.logger.error("登录2 失败 {}".format(username))
+            self.logger.error("登录2 失败 {}".format(person_info['id']))
             return False
 
         temperature = self.setting_config['report']['temperature']
         r = sess.post(url, data={
             '__EVENTTARGET': 'p1$ctl00$btnSubmit',
+            '__EVENTARGUMENT': '',
             '__VIEWSTATE': view_state['value'],
             '__VIEWSTATEGENERATOR': 'DC4D08A3',
             'p1$ChengNuo': 'p1_ChengNuo',
             'p1$BaoSRQ': t.strftime('%Y-%m-%d'),
             'p1$DangQSTZK': '良好',
             'p1$TiWen': str(round(random.uniform(temperature - 0.2, temperature + 0.2), 1)),
+            'p1$ZaiXiao': person_info['campus'],
+            'p1$ddlSheng$Value': '上海',
+            'p1$ddlSheng': '上海',
+            'p1$ddlShi$Value': '上海市',
+            'p1$ddlShi': '上海市',
+            'p1$ddlXian$Value': person_info['county'],
+            'p1$ddlXian': person_info['county'],
+            'p1$FengXDQDL': '否',
+            'p1$TongZWDLH': '否',
+            'p1$XiangXDZ': person_info['address'],
+            'p1$QueZHZJC$Value': '否',
+            'p1$QueZHZJC': '否',
+            'p1$DangRGL': '否',
+            'p1$GeLDZ': '',
+            'p1$CengFWH': '否',
+            'p1$CengFWH_RiQi': '',
+            'p1$CengFWH_BeiZhu': '',
+            'p1$JieChu': '否',
+            'p1$JieChu_RiQi': '',
+            'p1$JieChu_BeiZhu': '',
+            'p1$TuJWH': '否',
+            'p1$TuJWH_RiQi': '',
+            'p1$TuJWH_BeiZhu': '',
+            'p1$JiaRen_BeiZhu': '',
             'p1$SuiSM': '绿色',
-            'p1$ShiFJC': ['早餐', '午餐', '晚餐'],
+            'p1$LvMa14Days': '是',
+            'p1$Address2': '',
             'F_TARGET': 'p1_ctl00_btnSubmit',
+            'p1_GeLSM_Collapsed': 'false',
             'p1_Collapsed': 'false',
+            'F_STATE': '''eyJwMV9CYW9TUlEiOnsiVGV4dCI6IjIwMjAtMTEtMjIifSwicDFfRGFuZ1FTVFpLIjp7IkZfSXRlbXMiOltbIuiJr + WlvSIsIuiJr + WlvSIsMV0sWyLkuI3pgIIiLCLkuI3pgIIiLDFdXSwiU2VsZWN0ZWRWYWx1ZSI6IuiJr + WlvSJ9LCJwMV9aaGVuZ1podWFuZyI6eyJIaWRkZW4iOnRydWUsIkZfSXRlbXMiOltbIuaEn + WGkiIsIuaEn + WGkiIsMV0sWyLlkrPll70iLCLlkrPll70iLDFdLFsi5Y + R54OtIiwi5Y + R54OtIiwxXV0sIlNlbGVjdGVkVmFsdWVBcnJheSI6W119LCJwMV9UaVdlbiI6eyJUZXh0IjoiMzYuNSJ9LCJwMV9aYWlYaWFvIjp7IlNlbGVjdGVkVmFsdWUiOiLlrp3lsbEiLCJGX0l0ZW1zIjpbWyLkuI3lnKjmoKEiLCLkuI3lnKjmoKEiLDFdLFsi5a6d5bGxIiwi5a6d5bGx5qCh5Yy6IiwxXSxbIuW7tumVvyIsIuW7tumVv + agoeWMuiIsMV0sWyLlmInlrpoiLCLlmInlrprmoKHljLoiLDFdLFsi5paw6Ze46LevIiwi5paw6Ze46Lev5qCh5Yy6IiwxXV19LCJwMV9kZGxTaGVuZyI6eyJGX0l0ZW1zIjpbWyItMSIsIumAieaLqeecgeS7vSIsMSwiIiwiIl0sWyLljJfkuqwiLCLljJfkuqwiLDEsIiIsIiJdLFsi5aSp5rSlIiwi5aSp5rSlIiwxLCIiLCIiXSxbIuS4iua1tyIsIuS4iua1tyIsMSwiIiwiIl0sWyLph43luoYiLCLph43luoYiLDEsIiIsIiJdLFsi5rKz5YyXIiwi5rKz5YyXIiwxLCIiLCIiXSxbIuWxseilvyIsIuWxseilvyIsMSwiIiwiIl0sWyLovr3lroEiLCLovr3lroEiLDEsIiIsIiJdLFsi5ZCJ5p6XIiwi5ZCJ5p6XIiwxLCIiLCIiXSxbIum7kem + meaxnyIsIum7kem + meaxnyIsMSwiIiwiIl0sWyLmsZ / oi48iLCLmsZ / oi48iLDEsIiIsIiJdLFsi5rWZ5rGfIiwi5rWZ5rGfIiwxLCIiLCIiXSxbIuWuieW + vSIsIuWuieW + vSIsMSwiIiwiIl0sWyLnpo / lu7oiLCLnpo / lu7oiLDEsIiIsIiJdLFsi5rGf6KW / Iiwi5rGf6KW / IiwxLCIiLCIiXSxbIuWxseS4nCIsIuWxseS4nCIsMSwiIiwiIl0sWyLmsrPljZciLCLmsrPljZciLDEsIiIsIiJdLFsi5rmW5YyXIiwi5rmW5YyXIiwxLCIiLCIiXSxbIua5luWNlyIsIua5luWNlyIsMSwiIiwiIl0sWyLlub / kuJwiLCLlub / kuJwiLDEsIiIsIiJdLFsi5rW35Y2XIiwi5rW35Y2XIiwxLCIiLCIiXSxbIuWbm + W3nSIsIuWbm + W3nSIsMSwiIiwiIl0sWyLotLXlt54iLCLotLXlt54iLDEsIiIsIiJdLFsi5LqR5Y2XIiwi5LqR5Y2XIiwxLCIiLCIiXSxbIumZleilvyIsIumZleilvyIsMSwiIiwiIl0sWyLnlJjogoMiLCLnlJjogoMiLDEsIiIsIiJdLFsi6Z2S5rW3Iiwi6Z2S5rW3IiwxLCIiLCIiXSxbIuWGheiSmeWPpCIsIuWGheiSmeWPpCIsMSwiIiwiIl0sWyLlub / opb8iLCLlub / opb8iLDEsIiIsIiJdLFsi6KW / 6J
+            ePIiwi6KW / 6JePIiwxLCIiLCIiXSxbIuWugeWkjyIsIuWugeWkjyIsMSwiIiwiIl0sWyLmlrDnloYiLCLmlrDnloYiLDEsIiIsIiJdLFsi6aaZ5rivIiwi6aaZ5rivIiwxLCIiLCIiXSxbIua + s + mXqCIsIua + s + mXqCIsMSwiIiwiIl0sWyLlj7Dmub4iLCLlj7Dmub4iLDEsIiIsIiJdXSwiU2VsZWN0ZWRWYWx1ZUFycmF5IjpbIuS4iua1tyJdfSwicDFfZGRsU2hpIjp7IkVuYWJsZWQiOnRydWUsIkZfSXRlbXMiOltbIi0xIiwi6YCJ5oup5biCIiwxLCIiLCIiXSxbIuS4iua1t + W4giIsIuS4iua1t + W4giIsMSwiIiwiIl1dLCJTZWxlY3RlZFZhbHVlQXJyYXkiOlsi5LiK5rW35biCIl19LCJwMV9kZGxYaWFuIjp7IkVuYWJsZWQiOnRydWUsIkZfSXRlbXMiOltbIi0xIiwi6YCJ5oup5Y6 / 5
+            Yy6IiwxLCIiLCIiXSxbIum7hOa1puWMuiIsIum7hOa1puWMuiIsMSwiIiwiIl0sWyLljaLmub7ljLoiLCLljaLmub7ljLoiLDEsIiIsIiJdLFsi5b6Q5rGH5Yy6Iiwi5b6Q5rGH5Yy6IiwxLCIiLCIiXSxbIumVv + WugeWMuiIsIumVv + WugeWMuiIsMSwiIiwiIl0sWyLpnZnlronljLoiLCLpnZnlronljLoiLDEsIiIsIiJdLFsi5pmu6ZmA5Yy6Iiwi5pmu6ZmA5Yy6IiwxLCIiLCIiXSxbIuiZueWPo + WMuiIsIuiZueWPo + WMuiIsMSwiIiwiIl0sWyLmnajmtabljLoiLCLmnajmtabljLoiLDEsIiIsIiJdLFsi5a6d5bGx5Yy6Iiwi5a6d5bGx5Yy6IiwxLCIiLCIiXSxbIumXteihjOWMuiIsIumXteihjOWMuiIsMSwiIiwiIl0sWyLlmInlrprljLoiLCLlmInlrprljLoiLDEsIiIsIiJdLFsi5p2 + 5rGf5Yy6Iiwi5p2 + 5
+            rGf5Yy6IiwxLCIiLCIiXSxbIumHkeWxseWMuiIsIumHkeWxseWMuiIsMSwiIiwiIl0sWyLpnZLmtabljLoiLCLpnZLmtabljLoiLDEsIiIsIiJdLFsi5aWJ6LSk5Yy6Iiwi5aWJ6LSk5Yy6IiwxLCIiLCIiXSxbIua1puS4nOaWsOWMuiIsIua1puS4nOaWsOWMuiIsMSwiIiwiIl0sWyLltIfmmI7ljLoiLCLltIfmmI7ljLoiLDEsIiIsIiJdXSwiU2VsZWN0ZWRWYWx1ZUFycmF5IjpbIuWuneWxseWMuiJdfSwicDFfRmVuZ1hEUURMIjp7IlNlbGVjdGVkVmFsdWUiOiLlkKYiLCJGX0l0ZW1zIjpbWyLmmK8iLCLmmK8iLDFdLFsi5ZCmIiwi5ZCmIiwxXV19LCJwMV9Ub25nWldETEgiOnsiU2VsZWN0ZWRWYWx1ZSI6IuWQpiIsIkZfSXRlbXMiOltbIuaYryIsIuaYryIsMV0sWyLlkKYiLCLlkKYiLDFdXX0sInAxX1hpYW5nWERaIjp7IlRleHQiOiLkuIrmtbfluILlrp3lsbHljLrlpKflnLrplYfkuIrlpKfot685OeWPt + S4iua1t + Wkp + WtpuWuneWxseWwj + WMuuagoeWGhTnlj7fmpbwifSwicDFfUXVlWkhaSkMiOnsiRl9JdGVtcyI6W1si5pivIiwi5pivIiwxLCIiLCIiXSxbIuWQpiIsIuWQpiIsMSwiIiwiIl1dLCJTZWxlY3RlZFZhbHVlQXJyYXkiOlsi5ZCmIl19LCJwMV9EYW5nUkdMIjp7IlNlbGVjdGVkVmFsdWUiOiLlkKYiLCJGX0l0ZW1zIjpbWyLmmK8iLCLmmK8iLDFdLFsi5ZCmIiwi5ZCmIiwxXV19LCJwMV9HZUxTTSI6eyJIaWRkZW4iOnRydWUsIklGcmFtZUF0dHJpYnV0ZXMiOnt9fSwicDFfR2VMRlMiOnsiUmVxdWlyZWQiOmZhbHNlLCJIaWRkZW4iOnRydWUsIkZfSXRlbXMiOltbIuWxheWutumalOemuyIsIuWxheWutumalOemuyIsMV0sWyLpm4bkuK3pmpTnprsiLCLpm4bkuK3pmpTnprsiLDFdXSwiU2VsZWN0ZWRWYWx1ZSI6bnVsbH0sInAxX0dlTERaIjp7IkhpZGRlbiI6dHJ1ZX0sInAxX0NlbmdGV0giOnsiTGFiZWwiOiIyMDIw5bm0OeaciDI35pel5ZCO5piv5ZCm5Zyo5Lit6auY6aOO6Zmp5Zyw5Yy66YCX55WZ6L + HPHNwYW4gc3R5bGU9J2NvbG9yOnJlZDsnPu + 8iOWkqea0peS4nOeWhua4r + WMuueesOa1t + i9qeWwj + WMuuOAgeWkqea0peaxieayveihl + OAgeWkqea0peS4reW / g + a4lOa4r + WGt + mTvueJqea1geWMukHljLrlkoxC5Yy644CB5rWm5Lic6JCl5YmN5p2R44CB5a6J5b6955yB6Zic6Ziz5biC6aKN5LiK5Y6 / 5
+            oWO5Z + O6ZWH5byg5rSL5bCP5Yy644CB5rWm5Lic5ZGo5rWm6ZWH5piO5aSp5Y2O5Z + O5bCP5Yy644CB5rWm5Lic56Wd5qGl6ZWH5paw55Sf5bCP5Yy644CB5YaF6JKZ5Y + k5ruh5rSy6YeM5Lic5bGx6KGX6YGT5Yqe5LqL5aSE44CB5YaF6JKZ5Y + k5ruh5rSy6YeM5YyX5Yy66KGX6YGT77yJPC9zcGFuPiIsIkZfSXRlbXMiOltbIuaYryIsIuaYryIsMV0sWyLlkKYiLCLlkKYiLDFdXSwiU2VsZWN0ZWRWYWx1ZSI6IuWQpiJ9LCJwMV9DZW5nRldIX1JpUWkiOnsiSGlkZGVuIjp0cnVlfSwicDFfQ2VuZ0ZXSF9CZWlaaHUiOnsiSGlkZGVuIjp0cnVlfSwicDFfSmllQ2h1Ijp7IkxhYmVsIjoiMTHmnIgwOOaXpeiHszEx5pyIMjLml6XmmK / lkKbkuI7mnaXoh6rkuK3pq5jpo47pmanlnLDljLrlj5Hng63kurrlkZjlr4bliIfmjqXop6Y8c3BhbiBzdHlsZT0nY29sb3I6cmVkOyc + 77yI5aSp5rSl5Lic55aG5riv5Yy6556w5rW36L2p5bCP5Yy644CB5aSp5rSl5rGJ5rK96KGX44CB5aSp5rSl5Lit5b + D5riU5riv5Ya36ZO + 54
+            mp5rWB5Yy6QeWMuuWSjELljLrjgIHmtabkuJzokKXliY3mnZHjgIHlronlvr3nnIHpmJzpmLPluILpoo3kuIrljr / mhY7ln47plYflvKDmtIvlsI / ljLrjgIHmtabkuJzlkajmtabplYfmmI7lpKnljY7ln47lsI / ljLrjgIHmtabkuJznpZ3moaXplYfmlrDnlJ / lsI / ljLrjgIHlhoXokpnlj6Tmu6HmtLLph4zkuJzlsbHooZfpgZPlip7kuovlpITjgIHlhoXokpnlj6Tmu6HmtLLph4zljJfljLrooZfpgZPvvIk8L3NwYW4 + IiwiU2VsZWN0ZWRWYWx1ZSI6IuWQpiIsIkZfSXRlbXMiOltbIuaYryIsIuaYryIsMV0sWyLlkKYiLCLlkKYiLDFdXX0sInAxX0ppZUNodV9SaVFpIjp7IkhpZGRlbiI6dHJ1ZX0sInAxX0ppZUNodV9CZWlaaHUiOnsiSGlkZGVuIjp0cnVlfSwicDFfVHVKV0giOnsiTGFiZWwiOiIxMeaciDA45pel6IezMTHmnIgyMuaXpeaYr + WQpuS5mOWdkOWFrOWFseS6pOmAmumAlOW + hOS4remrmOmjjumZqeWcsOWMujxzcGFuIHN0eWxlPSdjb2xvcjpyZWQ7Jz7vvIjlpKnmtKXkuJznlobmuK / ljLrnnrDmtbfovanlsI / ljLrjgIHlpKnmtKXmsYnmsr3ooZfjgIHlpKnmtKXkuK3lv4PmuJTmuK / lhrfpk77nianmtYHljLpB5Yy65ZKMQuWMuuOAgea1puS4nOiQpeWJjeadkeOAgeWuieW + veecgemYnOmYs + W4gumijeS4iuWOv + aFjuWfjumVh + W8oOa0i + Wwj + WMuuOAgea1puS4nOWRqOa1pumVh + aYjuWkqeWNjuWfjuWwj + WMuuOAgea1puS4nOelneahpemVh + aWsOeUn + Wwj + WMuuOAgeWGheiSmeWPpOa7oea0sumHjOS4nOWxseihl + mBk + WKnuS6i + WkhOOAgeWGheiSmeWPpOa7oea0sumHjOWMl + WMuuihl + mBk + +8iTwvc3Bhbj4iLCJTZWxlY3RlZFZhbHVlIjoi5ZCmIiwiRl9JdGVtcyI6W1si5pivIiwi5pivIiwxXSxbIuWQpiIsIuWQpiIsMV1dfSwicDFfVHVKV0hfUmlRaSI6eyJIaWRkZW4iOnRydWV9LCJwMV9UdUpXSF9CZWlaaHUiOnsiSGlkZGVuIjp0cnVlfSwicDFfSmlhUmVuIjp7IkxhYmVsIjoiMTHmnIgwOOaXpeiHszEx5pyIMjLml6XlrrbkurrmmK / lkKbmnInlj5Hng63nrYnnl4fnirYifSwicDFfSmlhUmVuX0JlaVpodSI6eyJIaWRkZW4iOnRydWV9LCJwMV9TdWlTTSI6eyJTZWxlY3RlZFZhbHVlIjoi57u / 6
+            ImyIiwiRl9JdGVtcyI6W1si57qi6ImyIiwi57qi6ImyIiwxXSxbIum7hOiJsiIsIum7hOiJsiIsMV0sWyLnu7 / oibIiLCLnu7 / oibIiLDFdXX0sInAxX0x2TWExNERheXMiOnsiU2VsZWN0ZWRWYWx1ZSI6IuaYryIsIkZfSXRlbXMiOltbIuaYryIsIuaYryIsMV0sWyLlkKYiLCLlkKYiLDFdXX0sInAxIjp7IlRpdGxlIjoi5q + P5pel5Lik5oql77yI5LiL5Y2I77yJIiwiSUZyYW1lQXR0cmlidXRlcyI6e319fQ =='''
         }, headers={
             'X-Requested-With': 'XMLHttpRequest',
             'X-FineUI-Ajax': 'true'
         }, allow_redirects=False)
 
         if '提交成功' in r.text:
-            self.logger.info("{} 成功 {}".format(self.__get_report_name(t), username))
+            self.logger.info("{} 成功 {}".format(self.__get_report_name(t), person_info['id']))
             return True
         else:
-            self.logger.info("{} 失败 {}".format(self.__get_report_name(t), username))
+            self.logger.info("{} 失败 {}".format(self.__get_report_name(t), person_info['id']))
             return False
 
     def __send_report_email(self, is_successful, email_to, t):
