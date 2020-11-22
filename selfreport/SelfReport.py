@@ -109,7 +109,7 @@ class SelfReport(object):
                 continue
 
             is_successful = self.__report(t, person_info)
-            print("{} {} {}".format(person_info, self.__get_report_name(t), self.__get_status(is_successful)))
+            print("{} {} {}".format(person_info['id'], self.__get_report_name(t), self.__get_status(is_successful)))
 
             break
 
@@ -215,8 +215,7 @@ class SelfReport(object):
         Basic module: complete "Report of the Day" through user
         account and password
         :param t:time
-        :param username: account
-        :param password: password
+        :param person_info: Personal information read from configuration file
         :return: the status of "selfreport"
         """
         ii = '1' if t.hour < 19 else '2'

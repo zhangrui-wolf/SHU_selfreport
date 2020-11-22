@@ -4,8 +4,8 @@ import argparse
 from selfreport.SelfReport import SelfReport
 
 if __name__ == "__main__":
-    setting_config_path = "configs/setting_config.yaml"
-    person_config_path = "configs/person_config.yaml"
+    setting_config_path = "configs/wolf_setting_config.yaml"
+    person_config_path = "configs/wolf_person_config.yaml"
     save_log_dir = "log/"
 
     self_report = SelfReport(setting_config_path, person_config_path, save_log_dir, "selfreport")
