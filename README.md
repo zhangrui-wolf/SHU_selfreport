@@ -64,9 +64,9 @@
 
      SMTP服务器，以163邮箱为例。
 
-     ![image-20201126153117803](.\img\img_01.png)
+     ![image-20201126153117803](https://gitee.com/zhangrui_wolf/shu_selfreport/raw/master/img/img_01.png)
 
-     ![image-20201126160517130](.\img\img_02.png)
+     ![image-20201126160517130](https://gitee.com/zhangrui_wolf/shu_selfreport/raw/master/img/img_02.png)
 
 2. 修改`person_config.yaml`，
 
